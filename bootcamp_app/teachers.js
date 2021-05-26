@@ -9,17 +9,20 @@ const pool = new Pool({
 
 const args = process.argv.slice(2);
 
-const sQuery = `
-SELECT students.id as student_id, students.name as name, cohorts.name as cohort
-FROM students
+const tQuery = `
+SELECT DISTINCT teachers.name AS teacher, cohorts.name as cohort
+FROM assistance_requests
+JOIN teachers ON teachers.id = teacher_id
+JOIN students ON students.id = student_id
 JOIN cohorts ON cohorts.id = cohort_id
 WHERE cohorts.name LIKE $1
-LIMIT $2;`;
+ORDER BY teacher;
+`;
 
-pool.query(sQuery, [`%${args[0]}%`, `${args[1]}`])
+pool.query(tQuery, [`%${args[0]}%`])
   .then(res => {
-    res.rows.forEach(user => {
-      console.log(`${user.name} has an id of ${user.student_id} and was in the ${user.cohort} cohort`);
+    res.rows.forEach(row => {
+      console.log(`${row.cohort}, ${row.teacher}`)
     })
   })
   .catch(err => {
